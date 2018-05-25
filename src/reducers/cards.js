@@ -6,35 +6,9 @@ const initialState = {
 		  id: "0",
 		  title: 'PlannedTasks',
 		  cards:
-		   [
-			   	{id: 'lane01', title: 'Write Blog', description: 'Can AI make memes'},
-				{id: 'lane02', title: 'Pay Rent', description: 'Transfer via NEFT'},
-				{id: 'lane03', title: 'Pay Rent', description: 'Transfer via NEFT'},],
-			
-		},
-		{
-		  id: "1",
-		  title: 'Completed',
-		  cards: 
-		  	[
-				{id: 'lane10', title: 'Write Blog', description: 'Can AI make memes'},
-				{id: 'lane11', title: 'Pay Rent', description: 'Transfer via NEFT'},],
-			
-		},
-		{
-			id:"2",
-			title: 'Completed',
-			cards: 
-				[
-				  {id: 'lane20', title: 'Write Blog', description: 'Can AI make memes'},
-				  {id: 'lane21', title: 'Pay Rent', description: 'Transfer via NEFT'},
-				  {id: 'lane22', title: 'Pay Rent', description: 'Transfer via NEFT'},],
-			
-		},
-		
-		
+		   [],
+		}
 	  ],
-
 }
 
 export default (state = initialState, action) => {
@@ -43,6 +17,7 @@ export default (state = initialState, action) => {
 			return {
 				...state,
 				lanes: [...state.lanes,action.payload],
+				add: false
 				
 		};
 		case 'ADD_CARD':
@@ -50,13 +25,12 @@ export default (state = initialState, action) => {
 		return {
 			...state,
 			lanes: update(state.lanes,{
-				[num]:{cards:{$push: [{id:`lane${action.payload.laneId}${action.payload.cardId}`,
+				[num]:{cards:{$push: [{id:`lane${action.payload.laneId}${Math.floor(Math.random() * (100 - 1)) + 1}`,
 										title: action.payload.head,
 										description: action.payload.task}] }}
 			})
 		};
 		case 'REMOVE_CARD':
-		
 		let arr = state.lanes[action.payload.id].cards.filter( o => o.id !== action.payload.i);
 		let index = action.payload.id;
 				return {
@@ -74,7 +48,6 @@ export default (state = initialState, action) => {
 		case 'CHANGE_CARD':
 			let indexLan = action.payload.laneId;
 			let indexCard = action.payload.id;
-
 				return {
 					...state,
 					lanes: update(state.lanes,{
