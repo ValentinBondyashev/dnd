@@ -7,3 +7,9 @@ body {
   display: flex;
   justify-content: start;
 }
+
+.lane_header{
+  display: flex;
+  justify-content: space-between;
+  padding: 5px;
+}

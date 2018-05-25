@@ -3,6 +3,8 @@ import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import { connect } from 'react-redux';
 import * as cardActions from './actions/cards';
 import { bindActionCreators } from 'redux';
+import Popup from "reactjs-popup";
+import { Button, Input, Card } from 'semantic-ui-react';
 
 
 import './App.css';
@@ -57,6 +59,45 @@ import './App.css';
   });
   
   class App extends Component {
+
+    constructor(props) {
+        super(props);
+
+        this.state = {
+            inputName: '',
+            inputTask: '',
+            inputHead: '',
+            inputLaneHead:''
+        }
+    }
+    changeInputName = (e) => {
+        this.setState({inputName : e.target.value})
+    }
+
+    changeInputHead = (e) => {
+        this.setState({inputHead: e.target.value})
+    }
+
+    changeInputLaneHead = (e) => {
+        this.setState({inputLaneHead : e.target.value})
+    }
+
+    changeInputTask = (e) => {
+        this.setState({inputTask : e.target.value})
+    }
+    
+    clearInput = () => {
+        this.setState({inputLaneHead: ''})
+      }
+
+    clearInputName = () => {
+        this.setState({inputName : ''})
+    }
+    
+    clearInputTask = () => {
+        this.setState({inputTask: ''})
+    }
+
         
     getList = id => {
         return this.props.lanes[id].cards
@@ -99,15 +140,12 @@ import './App.css';
         const newLane = {
             id: `${id}`,
             title: 'Your task',
-            cards:
-                [
-                    {id: 0, title: 'Task 1', description: 'Your text'},
-                ]
+            cards: []
             }; 
-
+        console.log(Math.floor(Math.random()))
           return (
               <DragDropContext onDragEnd={this.onDragEnd}>
-              <button circular icon='add' onClick={this.props.addLane.bind(this, newLane)}/>
+              <Button basic icon='right arrow' onClick={this.props.addLane.bind(this, newLane)}/>
               {  
                 this.props.lanes.map((lane,index) =>{
                    return(
@@ -116,7 +154,15 @@ import './App.css';
                           <div
                               ref={provided.innerRef}
                               style={getListStyle(snapshot.isDraggingOver)}>
-                              <h1>{lane.title} <button onClick={this.props.removeLane.bind(this, lane.id)}>x</button></h1>
+                              <div className="lane_header">
+                              <Popup trigger={<h2>{lane.title}</h2>} position="right center">
+                                <div>
+                                    <Input type="text" onClick={this.clearInput} onChange={this.changeInputLaneHead} value={this.state.inputLaneHead}  />
+                                    <Input type="submit" value="Change name" onClick={this.props.changeNameLane.bind(this, index,this.state.inputLaneHead  )} />
+                                </div>
+                                </Popup>
+                                <Button circular icon='remove' onClick={this.props.removeLane.bind(this, lane.id)}/>
+                                </div>
                               {lane.cards.map((item, index) => (
                                   <Draggable
                                       key={item.id}
@@ -135,14 +181,33 @@ import './App.css';
                                                 <button onClick={this.props.removeCard.bind(this, lane.id,item.id)}>x</button>
                                                 <h1>{item.title}</h1>
                                                 <p>{item.description}</p>
+                                                <Popup  trigger={<Button circular  icon='edit' />} position="right center">
+                                                <Card.Content>
+                                                    <Card.Header><Input placeholder='Name card...' onClick={this.clearInputName} onChange={this.changeInputName} value={this.state.inputName} /></Card.Header>
+                                                    <Card.Header><Input placeholder='Task...' onClick={this.clearInputTask}  onChange={this.changeInputTask} value={this.state.inputTask} /></Card.Header>
+                                                    <Card.Meta><Input type="submit"  onClick={this.props.changeCard.bind(this,lane.id, index,this.state.inputName, this.state.inputTask )} value="Edit" /></Card.Meta>  
+                                                </Card.Content>
+                                                </Popup>
                                               </div>}
                                           </div>
                                       )}
                                   </Draggable>
                               ))}
                               {provided.placeholder}
+                              <Popup trigger={<Button circular icon='add'></Button>} position="right center">
+                                <div>
+                                    <label>
+                                    Head:
+                                    <Input type="text" onChange={this.changeInputHead} value={this.state.inputHead}  />
+                                    Text:
+                                    <Input type="text" onChange={this.changeInputTask} value={this.state.inputTask} />
+                                    </label>
+                                    <Input type="submit" value="Add card" onClick={this.props.addCard.bind(this, lane.id, lane.cards.length,this.state.inputHead, this.state.inputTask  )} />
+                                </div>
+                              </Popup>
                           </div>
                       )}
+                      
                   </Droppable>)
       })}
                  

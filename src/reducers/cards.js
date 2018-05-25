@@ -7,9 +7,9 @@ const initialState = {
 		  title: 'PlannedTasks',
 		  cards:
 		   [
-			   	{id: 0, title: 'Write Blog', description: 'Can AI make memes'},
-				{id: 1, title: 'Pay Rent', description: 'Transfer via NEFT'},
-				{id: 2, title: 'Pay Rent', description: 'Transfer via NEFT'},],
+			   	{id: 'lane01', title: 'Write Blog', description: 'Can AI make memes'},
+				{id: 'lane02', title: 'Pay Rent', description: 'Transfer via NEFT'},
+				{id: 'lane03', title: 'Pay Rent', description: 'Transfer via NEFT'},],
 			
 		},
 		{
@@ -17,8 +17,8 @@ const initialState = {
 		  title: 'Completed',
 		  cards: 
 		  	[
-				{id: 3, title: 'Write Blog', description: 'Can AI make memes'},
-				{id: 4, title: 'Pay Rent', description: 'Transfer via NEFT'},],
+				{id: 'lane10', title: 'Write Blog', description: 'Can AI make memes'},
+				{id: 'lane11', title: 'Pay Rent', description: 'Transfer via NEFT'},],
 			
 		},
 		{
@@ -26,9 +26,9 @@ const initialState = {
 			title: 'Completed',
 			cards: 
 				[
-				  {id: 5, title: 'Write Blog', description: 'Can AI make memes'},
-				  {id: 6, title: 'Pay Rent', description: 'Transfer via NEFT'},
-				  {id: 7, title: 'Pay Rent', description: 'Transfer via NEFT'},],
+				  {id: 'lane20', title: 'Write Blog', description: 'Can AI make memes'},
+				  {id: 'lane21', title: 'Pay Rent', description: 'Transfer via NEFT'},
+				  {id: 'lane22', title: 'Pay Rent', description: 'Transfer via NEFT'},],
 			
 		},
 		
@@ -46,17 +46,17 @@ export default (state = initialState, action) => {
 				
 		};
 		case 'ADD_CARD':
-		console.log(action.payload );
 		let num = action.payload.laneId;
 		return {
 			...state,
 			lanes: update(state.lanes,{
-				[num]:{cards:{$push: [{id:action.payload.cardId,
+				[num]:{cards:{$push: [{id:`lane${action.payload.laneId}${action.payload.cardId}`,
 										title: action.payload.head,
 										description: action.payload.task}] }}
 			})
 		};
 		case 'REMOVE_CARD':
+		
 		let arr = state.lanes[action.payload.id].cards.filter( o => o.id !== action.payload.i);
 		let index = action.payload.id;
 				return {
@@ -72,21 +72,18 @@ export default (state = initialState, action) => {
 					lanes:state.lanes.filter( o => o.id !== action.payload),
 				};  
 		case 'CHANGE_CARD':
-			console.log(state.lanes[action.payload.laneId].cards[action.payload.id].title = action.payload.head);
-			console.log(state.lanes[action.payload.laneId].cards[action.payload.id].description = action.payload.text);
 			let indexLan = action.payload.laneId;
 			let indexCard = action.payload.id;
 
 				return {
 					...state,
 					lanes: update(state.lanes,{
-						[indexLan]:{cards:{indexCard:{$set: {id:indexCard,
+						[indexLan]:{cards:{[indexCard]:{$set: {id:indexCard,
 															title: action.payload.head,
 															description: action.payload.text}}}}
 					})
 				};  
 		case 'CHANGE_NAME_LANE':
-				console.log(action.payload)
 				return{
 					...state,
 					lanes: update(state.lanes,{
@@ -94,7 +91,6 @@ export default (state = initialState, action) => {
 					})
 				}
 		case 'CHANGE_TWO_LANE':
-				console.log(action.payload)
 				return{
 					...state,
 					lanes: update(state.lanes,{
@@ -104,7 +100,6 @@ export default (state = initialState, action) => {
 					)
 				}		
 		case 'CHANGE_LANE':
-				console.log(action.payload)
 				let indexN = action.payload.laneId;
 				return{
 					...state,
