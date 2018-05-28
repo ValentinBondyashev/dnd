@@ -44,22 +44,43 @@ import * as laneActions from './actions/lanes';
       userSelect: 'none',
       padding: grid * 2,
       margin: `0 0 ${grid}px 0`,
-  
+      borderRadius: "10px",
       // change background colour if dragging
       background: isDragging ? 'lightgreen' : 'grey',
   
       // styles we need to apply on draggables
       ...draggableStyle
   });
-  
-  const getListStyle = isDraggingOver => ({
-      background: isDraggingOver ? 'lightblue' : 'lightgrey',
-      padding: grid,
-      width: 250
+
+  const getLaneStyle = (isDragging, draggableStyle) => ({
+    // some basic styles to make the items look a bit nicer
+    userSelect: 'none',
+    padding: grid * 2,
+    margin: `0 5px ${grid}px 5px`,
+    borderRadius: "15px",
+    // change background colour if dragging
+    background: isDragging ? 'lightgreen' : 'lightgrey',
+
+    // styles we need to apply on draggables
+    ...draggableStyle
   });
   
-  class App extends Component {
+  const getListStyle = isDraggingOver => ({
+      background: isDraggingOver ? 'lightblue' : '#989898',
+      padding: grid,
+      borderRadius: "10px",
+      width: 250
+  });
 
+  const getBorderStyle = isDraggingOver => ({
+    background: isDraggingOver ? 'lightblue' : 'lightgrey',
+    display: 'flex',
+    padding: grid,
+    overflow: 'auto',
+    width: '100%',
+  });
+
+    class App extends Component {
     constructor(props) {
         super(props);
 
@@ -103,67 +124,113 @@ import * as laneActions from './actions/lanes';
     }
     
     getList = id => {
-        return this.props.lanes[id].cards
+        let index = this.props.lanes.map((item, index)=>{
+			if(item.id === id){
+				return index;
+			}
+		})
+		let indexLane = index.filter(o => Number(o) ===  o);
+		let IndexL = indexLane[0];
+        return this.props.lanes[IndexL].cards
     }
+
+    getListLane = id =>{
+        return this.props.lanes
+    }
+
+    onDragEndLane(result) {
+        // dropped outside the list
+        if (!result.destination) {
+          return;
+        }
+    
+        const items = reorder(
+          this.state.items,
+          result.source.index,
+          result.destination.index
+        );
+    
+        this.setState({
+          items,
+        });
+      }
 
     onDragEnd = result => {
           const { source, destination } = result;
-  
+            
           // dropped outside the list
           if (!destination) {
               return;
           }
-  
-          if (source.droppableId === destination.droppableId) {
-              console.log(source.droppableId)
-              const items = reorder(
-                  this.getList(source.droppableId),
-                  source.index,
-                  destination.index
-              );
-              
-              this.props.changeLane(source.droppableId, items);
-          } else {
-              const result = move(
-                  this.getList(source.droppableId),
-                  this.getList(destination.droppableId),
-                  source,
-                  destination
-              );
-            this.props.changeTwoLane(source.droppableId,result[source.droppableId],destination.droppableId, result[destination.droppableId])
+
+          if(result.type === 'PERSON'){
+            const items = reorder(
+                this.getListLane(source.droppableId),
+                source.index,
+                destination.index
+            );
+            this.props.moveLane(source.index,items[source.index],destination.index,items[destination.index],items);
+          }else{
+            if (source.droppableId === destination.droppableId) {
+                const items = reorder(
+                    this.getList(source.droppableId),
+                    source.index,
+                    destination.index
+                );
+                
+                this.props.changeLane(source.droppableId, items, this.props.lanes);
+            } else {
+                const result = move(
+                    this.getList(source.droppableId),
+                    this.getList(destination.droppableId),
+                    source,
+                    destination
+                );
+                const items = reorder(
+                    this.getListLane(source.droppableId),
+                    source.index,
+                    destination.index
+                );
+                
+              this.props.changeTwoLane(source.droppableId,result[source.droppableId],destination.droppableId, result[destination.droppableId],this.props.lanes)
+            }
           }
       }
-  
-      // Normally you would want to split things out into separate components.
-      // But in this example everything is just done in one place for simplicity
-      render() {
-        
+
+    render() {
         const { addLane, changeNameLane, removeLane ,removeCard, changeCard, addCard, lanes } = this.props;
         const { inputLaneHead, inputName, inputTask, inputHead } = this.state;
 
-        let id = lanes.length;
-
-        const newLane = {
-            id: `${id}`,
-            title: 'Your task',
-            cards: []
-        }; 
-
-
-        return (
-            <DragDropContext onDragEnd={this.onDragEnd}>
-              <Button basic icon='right arrow' 
-                    onClick={addLane.bind(this, newLane)}/>
-              {  
-                lanes.map((lane,index) =>{
-                   return(
-                        <Droppable key={index} droppableId={lane.id} >
+    return (
+    <DragDropContext onDragEnd={this.onDragEnd}>
+        <Button className="btn_add"   
+                onClick={addLane.bind(this)}>Add Card</Button>
+        <Droppable droppableId="droppable" type="PERSON" direction="horizontal">
+        {(provided, snapshot) => (
+        <div
+            ref={provided.innerRef}
+            style={getBorderStyle(snapshot.isDraggingOver)}
+            {...provided.droppableProps}
+        >
+            {lanes.map((lane, index)=>(
+                <Draggable  key={lane.id} type="PERSON" draggableId={lane.id} index={index}>
+                {(provided, snapshot) => (
+                  <div
+                    ref={provided.innerRef}
+                    {...provided.draggableProps}
+                    {...provided.dragHandleProps}
+                    style={getLaneStyle(
+                      snapshot.isDragging,
+                      provided.draggableProps.style
+                    )}
+                  >
+                    {<Droppable key={index} droppableId={lane.id} >
                         {(provided, snapshot) => (
                           <div
                               ref={provided.innerRef}
                               style={getListStyle(snapshot.isDraggingOver)}>
                               <div className="lane_header">
-                                <Popup trigger={<h2>{lane.title}</h2>} position="right center">
+                              <Popup trigger={<h2 className="header_lane" >{lane.title}</h2>} position="right center">
                                     <div>
                                         <Input type="text" 
                                                 onClick={this.clearInput} 
@@ -175,7 +242,7 @@ import * as laneActions from './actions/lanes';
                                     </div>
                                     </Popup>
                                     <Button circular icon='remove' 
-                                            onClick={removeLane.bind(this, lane.id)}/>
+                                            onClick={confirm('Вы действительно хотите удалить?')?removeLane.bind(this, lane.id): null}/>
                                 </div>
                                 {lane.cards.map((item, index) => (
                                   <Draggable
@@ -192,9 +259,9 @@ import * as laneActions from './actions/lanes';
                                                   provided.draggableProps.style
                                               )}>
                                               {<div>
-                                                <Button circular icon='remove' onClick={removeCard.bind(this, lane.id,item.id)}/>
-                                                <h3>{item.title}</h3>
-                                                <p>{item.description}</p>
+                                                <Button circular icon='remove' onClick={removeCard.bind(this, lane.id,item.id, lanes)}/>
+                                                <h2>{item.title}</h2>
+                                                <p className="cards_text">{item.description}</p>
                                                 <Popup  trigger={<Button circular  icon='edit' />} position="right center">
                                                     <Card.Content>
                                                         <Card.Header>
@@ -211,7 +278,7 @@ import * as laneActions from './actions/lanes';
                                                         </Card.Header>
                                                         <Card.Meta>
                                                             <Input type="submit"  
-                                                                            onClick={changeCard.bind(this,lane.id, index,inputName,inputTask )} 
+                                                                            onClick={changeCard.bind(this,lane.id, index,inputName,inputTask,item.id, lanes  )} 
                                                                             value="Edit" />
                                                         </Card.Meta>  
                                                     </Card.Content>
@@ -243,12 +310,16 @@ import * as laneActions from './actions/lanes';
                               </Popup>
                             </div>
                         )}  
-                    </Droppable> 
-                )
-            }
-        )
-        }       
-            </DragDropContext>
+                    </Droppable> }
+                  </div>
+                )}
+              </Draggable>
+            ))}
+            {provided.placeholder}
+        </div>
+        )}
+    </Droppable>   
+    </DragDropContext>
           );
           
       }

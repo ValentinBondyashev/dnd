@@ -18,7 +18,26 @@
   font-size: large;
 }
 
-@keyframes App-logo-spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+.cards_text{
+  word-wrap: break-word;
+  font-size: 17px;
 }
+
+.ui.button, .ui.buttons .button, .ui.buttons .or {
+  font-size: 0.9rem !important;
+}
+
+.lane_header{
+  display: flex;
+  justify-content: space-between;
+  padding: 5px;
+}
+
+.btn_add{
+  height: 100px;
+}
+
+.header_lane{
+  margin-top: 25px !important;
+}
+
