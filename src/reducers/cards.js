@@ -32,7 +32,8 @@ export default (state = initialState, action) => {
 			lanes: update(state.lanes,{
 				[num]:{cards:{$push: [{id:`lane${cardId}`,
 										title: action.payload.head,
-										description: action.payload.task}] }}
+										description: action.payload.task,
+										lengthText:true}] }}
 			})
 		};
 		case 'REMOVE_CARD':
@@ -54,6 +55,22 @@ export default (state = initialState, action) => {
 					...state,
 					lanes:state.lanes.filter( o => o.id !== action.payload),
 				};  
+		case 'CHANGE_LENGTH_CARD':
+			let indexCLC = action.payload.lanes.map((item, index)=>{
+				if(item.id === action.payload.laneId){
+					return index;
+				}
+			})
+			let indexLaneCLC = indexCLC.filter(o => Number(o) ===  o);
+				return {
+					...state,
+					lanes: update(state.lanes,{
+						[indexLaneCLC[0]]:{cards:{[action.payload.id]:{$set: {  id:action.payload.cardId,
+																				title: action.payload.head,
+																				description: action.payload.text,
+																				lengthText: [!action.payload.lengthText]}}}}
+												})
+				};  
 		case 'CHANGE_CARD':
 			let indexCC = action.payload.lanes.map((item, index)=>{
 				if(item.id === action.payload.laneId){
@@ -68,7 +85,7 @@ export default (state = initialState, action) => {
 															title: action.payload.head,
 															description: action.payload.text}}}}
 												})
-				};  
+				}; 
 		case 'CHANGE_NAME_LANE':
 				return{
 					...state,

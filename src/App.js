@@ -4,12 +4,17 @@ import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import Popup from "reactjs-popup";
-import { Button, Input, Card } from 'semantic-ui-react';
+import { Button, Form } from 'semantic-ui-react';
 
 import './App.css';
 import * as cardActions from './actions/cards';
 import * as laneActions from './actions/lanes';
+import PopupLaneName from './Components/PopupLaneName';
+import PopupChangeCard from './Components/PopupChangeCard';
+import PopupAddCard from './Components/PopupAddCard';
+import Card from './Components/Card';
 
+/*      https://www.smashingmagazine.com/2018/02/react-d3-ecosystem/  */
   
   // a little function to help us with reordering the result
   const reorder = (list, startIndex, endIndex) => {
@@ -85,43 +90,9 @@ import * as laneActions from './actions/lanes';
         super(props);
 
         this.state = {
-            inputName: '',
-            inputTask: '',
-            inputHead: '',
-            inputLaneHead:''
+            
         }
-    }
-    changeInputName = (e) => {
-        this.setState({inputName : e.target.value})
-    }
-
-    changeInputHead = (e) => {
-        this.setState({inputHead: e.target.value})
-    }
-
-    changeInputLaneHead = (e) => {
-        this.setState({inputLaneHead : e.target.value})
-    }
-
-    changeInputTask = (e) => {
-        this.setState({inputTask : e.target.value})
-    }
-    
-    clearInput = () => {
-        this.setState({inputLaneHead: ''})
-    }
-
-    clearInputName = () => {
-        this.setState({inputName : ''})
-    }
-    
-    clearInputTask = () => {
-        this.setState({inputTask: ''})
-    }
-
-    clearInputHead = () => {
-        this.setState({inputHead: ''})
-    }
+    }  
     
     getList = id => {
         let index = this.props.lanes.map((item, index)=>{
@@ -197,14 +168,25 @@ import * as laneActions from './actions/lanes';
           }
       }
 
+      rL = (i,id,e ) =>{
+          console.log(e,id,i)
+        if(this.props.lanes[id].cards.length > 0){
+            confirm('Do you really want to remove this lane?') ? this.props.removeLane(i) : null;
+        }else{
+            this.props.removeLane(i)
+        }
+      }
+
+     
+
     render() {
-        const { addLane, changeNameLane, removeLane ,removeCard, changeCard, addCard, lanes } = this.props;
+        const { addLane, changeNameLane, removeCard, changeCard, addCard, lanes } = this.props;
         const { inputLaneHead, inputName, inputTask, inputHead } = this.state;
 
     return (
     <DragDropContext onDragEnd={this.onDragEnd}>
         <Button className="btn_add"   
-                onClick={addLane.bind(this)}>Add Card</Button>
+                onClick={addLane.bind(this)}>Add Lane</Button>
         <Droppable droppableId="droppable" type="PERSON" direction="horizontal">
         {(provided, snapshot) => (
         <div
@@ -230,20 +212,11 @@ import * as laneActions from './actions/lanes';
                               ref={provided.innerRef}
                               style={getListStyle(snapshot.isDraggingOver)}>
                               <div className="lane_header">
-                              <Popup trigger={<h2 className="header_lane" >{lane.title}</h2>} position="right center">
+                              <PopupLaneName lane={lane} index={index} inputLaneHead={inputLaneHead} changeNameLane={changeNameLane}/>
                                     <div>
-                                        <Input type="text" 
-                                                onClick={this.clearInput} 
-                                                onChange={this.changeInputLaneHead} 
-                                                value={inputLaneHead}  />
-                                        <Input type="submit" 
-                                                value="Change name" 
-                                                onClick={changeNameLane.bind(this, index,inputLaneHead  )} />
+                                        <Button circular icon='remove' 
+                                                onClick={this.rL.bind(this, lane.id, index)}/></div>
                                     </div>
-                                    </Popup>
-                                    <Button circular icon='remove' 
-                                            onClick={confirm('Вы действительно хотите удалить?')?removeLane.bind(this, lane.id): null}/>
-                                </div>
                                 {lane.cards.map((item, index) => (
                                   <Draggable
                                       key={item.id}
@@ -259,55 +232,17 @@ import * as laneActions from './actions/lanes';
                                                   provided.draggableProps.style
                                               )}>
                                               {<div>
-                                                <Button circular icon='remove' onClick={removeCard.bind(this, lane.id,item.id, lanes)}/>
-                                                <h2>{item.title}</h2>
-                                                <p className="cards_text">{item.description}</p>
-                                                <Popup  trigger={<Button circular  icon='edit' />} position="right center">
-                                                    <Card.Content>
-                                                        <Card.Header>
-                                                            <Input placeholder='Name card...' 
-                                                                            onClick={this.clearInputName}
-                                                                            onChange={this.changeInputName} 
-                                                                            value={inputName} />
-                                                        </Card.Header>
-                                                        <Card.Header>
-                                                            <Input placeholder='Task...' 
-                                                                            onClick={this.clearInputTask}  
-                                                                            onChange={this.changeInputTask} 
-                                                                            value={inputTask} />
-                                                        </Card.Header>
-                                                        <Card.Meta>
-                                                            <Input type="submit"  
-                                                                            onClick={changeCard.bind(this,lane.id, index,inputName,inputTask,item.id, lanes  )} 
-                                                                            value="Edit" />
-                                                        </Card.Meta>  
-                                                    </Card.Content>
-                                                </Popup>
+                                                <Card removeCard={removeCard} lane={lane} item={item} lanes={lanes}/>
+                                               
+                                                <PopupChangeCard index={index}  lane={lane} changeCard={changeCard} item={item} lanes={lanes}/>
                                               </div>}
                                           </div>
                                       )}
                                   </Draggable>
                               ))}
                               {provided.placeholder}
-                              <Popup trigger={<Button circular icon='add'></Button>} position="right center">
-                                <div>
-                                    <label>
-                                    Head:
-                                    <Input type="text" 
-                                            onClick={this.clearInputHead} 
-                                            onChange={this.changeInputHead} 
-                                            value={inputHead}  />
-                                    Text:
-                                    <Input type="text" 
-                                            onClick={this.clearInputTask} 
-                                            onChange={this.changeInputTask} 
-                                            value={inputTask} />
-                                    </label>
-                                    <Input type="submit" 
-                                            value="Add card" 
-                                            onClick={addCard.bind(this, index, lane.cards.length,inputHead, inputTask  )} />
-                                </div>
-                              </Popup>
+                              <PopupAddCard  index={index} lane={lane} addCard={addCard}/>
+                              
                             </div>
                         )}  
                     </Droppable> }

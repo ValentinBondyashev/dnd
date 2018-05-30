@@ -12,3 +12,9 @@ export const changeCard = (laneId,id, head, text, cardId, lanes) => ({
 	type: 'CHANGE_CARD',
 	payload: {laneId,id, head, text,cardId, lanes}
 });
+
+export const changeLengthCard = (laneId,id, head, text, cardId, lanes, lengthText) => ({
+	type: 'CHANGE_LENGTH_CARD',
+	payload: {laneId,id, head, text, cardId, lanes, lengthText}
+})
+
